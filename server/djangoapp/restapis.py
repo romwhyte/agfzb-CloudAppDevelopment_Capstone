@@ -132,8 +132,9 @@ def get_dealer_by_state_from_cf(url, state):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
 def analyze_review_sentiments(text):
-    api_key = "KcNwxkjvJr60UZszNfiSi2MhRdeVuKk8_ySztJA2AOql"
+
     url = "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/8e7d499e-ec72-43c3-97d9-ba3ad6220aba"
+    api_key = API_KEY
     texttoanalyze= text
     version = '2020-08-01'
     authenticator = IAMAuthenticator(api_key)
