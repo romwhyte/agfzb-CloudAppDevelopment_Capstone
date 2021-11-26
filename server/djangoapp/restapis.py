@@ -5,19 +5,16 @@ from requests.auth import HTTPBasicAuth
 from ibm_watson import NaturalLanguageUnderstandingV1
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_watson.natural_language_understanding_v1 import Features, SentimentOptions
-
+from django.conf import settings
 # Create a `get_request` to make HTTP GET requests
 # e.g., response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
 #                                     auth=HTTPBasicAuth('apikey', api_key))
-def get_request(url,api_key=None, **kwargs):
+def get_request(url, **kwargs):
     print(kwargs)
     print("GET from {} ".format(url))
     try:
         # Call get method of requests library with URL and parameters
-        if api_key:
-            response = requests.get(url,params=kwargs, headers={'Content-Type': 'application/json'}, auth=HTTPBasicAuth('apikey',api_key))
-        else:
-            response = requests.get(url,params=kwargs, headers={'Content-Type': 'application/json'})
+        response = requests.get(url,params=kwargs, headers={'Content-Type': 'application/json'})
  
     except:
         # If any error occurs
@@ -30,10 +27,9 @@ def get_request(url,api_key=None, **kwargs):
 # Create a `post_request` to make HTTP POST requests
 # e.g., response = requests.post(url, params=kwargs, json=payload)
 def post_request(url, json_payload, **kwargs):
-    json_obj = json_payload["review"]
-    print(kwargs)
+    print(json_payload)
     try:
-        response = requests.post(url, json=json_obj, params=kwargs)
+        response = requests.post(url, data=json_payload, params=kwargs)
     except:
         print("Something went wrong")
     print (response)
@@ -50,11 +46,13 @@ def get_dealers_from_cf(url, **kwargs):
     json_result = get_request(url)
     if json_result:
         # Get the row list in JSON as dealers
+        print(json_result)
         dealers = json_result["body"]
         # For each dealer object
         for dealer in dealers:
             # Get its content in `doc` object
             # Create a CarDealer object with values in `doc` object
+            print(dealer)
             dealer_obj = CarDealer(address=dealer["address"], city=dealer["city"], full_name=dealer["full_name"],
                                    id=dealer["id"], lat=dealer["lat"], long=dealer["long"],
                                    short_name=dealer["short_name"],
@@ -93,6 +91,7 @@ def get_dealer_by_id_from_cf(url, dealerId):
     results = []
     # Call get_request with a URL parameter
     json_result = get_request(url,dealerId=dealerId)
+    
     if json_result:
         # Get the row list in JSON as dealers
         dealers = json_result["body"]
@@ -105,7 +104,8 @@ def get_dealer_by_id_from_cf(url, dealerId):
                                    short_name=dealer["short_name"],
                                    st=dealer["st"], zip=dealer["zip"])
             results.append(dealer_obj)
-
+    return results 
+    
 def get_dealer_by_state_from_cf(url, state):
     results = []
     # Call get_request with a URL parameter
@@ -134,7 +134,7 @@ def get_dealer_by_state_from_cf(url, state):
 def analyze_review_sentiments(text):
 
     url = "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/8e7d499e-ec72-43c3-97d9-ba3ad6220aba"
-    api_key = API_KEY
+    api_key = settings.API_KEY
     texttoanalyze= text
     version = '2020-08-01'
     authenticator = IAMAuthenticator(api_key)
@@ -145,7 +145,8 @@ def analyze_review_sentiments(text):
     natural_language_understanding.set_service_url(url)
     response = natural_language_understanding.analyze(
         text=text,
-        features= Features(sentiment= SentimentOptions())
+        features= Features(sentiment= SentimentOptions()),
+        language="en"
     ).get_result()
     print(json.dumps(response))
     sentiment_score = str(response["sentiment"]["document"]["score"])
