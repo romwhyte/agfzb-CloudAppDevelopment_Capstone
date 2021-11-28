@@ -10,7 +10,7 @@ from datetime import datetime
 from .models import CarModel
 import logging
 import json
-import ipdb
+#import ipdb
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
